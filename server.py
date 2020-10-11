@@ -65,19 +65,22 @@ def accepting_connections():
 # 2nd thread functions - 1) see all the clients 2) select a client 3) send commands to the connected client.
 # Interactive prompt for sending commands
 # turtle > list
-# 0 friend-A
-# 1 Friend-B
+# 0 friend-A Port
+# 1 Friend-B Port
+# turtle > select 1
+# 192.168.0.1> dir
 
 def start_turtle():
     cmd = input('turtle> ')
-    if cmd == 'list':
-        list_connections()
-    elif 'select' in cmd:
-        conn = get_target(cmd)
-        if conn is not None:
-            send_target_commands(conn)
-    else:
-        print("Command not recognised.")
+    while True:
+        if cmd == 'list':
+            list_connections()
+        elif 'select' in cmd:
+            conn = get_target(cmd)
+            if conn is not None:
+                send_target_commands(conn)
+        else:
+            print("Command not recognised.")
 
 
 # Display all current active connections with the client
@@ -97,9 +100,30 @@ def list_connections():
     print("---- Clients -----" + "\n" + results)
 
 
+# selecting the target
 def get_target(cmd):
-    pass
+    try:
+        target = cmd.replace('select ', '')  # target = id
+        target = int(target)
+        conn = all_connections[target]
+        print("You are now connected to :" + str(all_address[target][0]))
+        print(str(all_address[target][0]) + ">", end="")
+        # 192.168.0.4>
+        return conn
+    except:
+        print("Selection not valid")
 
 
 def send_target_commands(conn):
-    pass
+    while True:
+        try:
+            cmd = input()
+            if cmd == 'quit':
+                break
+            if len(str.encode(cmd)) > 0:
+                conn.send(str.encode(cmd))
+                client_response = str(conn.recv(20480), 'utf-8')
+                print(client_response, end="")
+        except:
+            print("Error sending commands")
+            break
