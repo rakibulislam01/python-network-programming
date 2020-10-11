@@ -60,3 +60,46 @@ def accepting_connections():
             print("Connection has been established : " + address[0])
         except:
             print("Error accepting connections.")
+            
+
+# 2nd thread functions - 1) see all the clients 2) select a client 3) send commands to the connected client.
+# Interactive prompt for sending commands
+# turtle > list
+# 0 friend-A
+# 1 Friend-B
+
+def start_turtle():
+    cmd = input('turtle> ')
+    if cmd == 'list':
+        list_connections()
+    elif 'select' in cmd:
+        conn = get_target(cmd)
+        if conn is not None:
+            send_target_commands(conn)
+    else:
+        print("Command not recognised.")
+
+
+# Display all current active connections with the client
+def list_connections():
+    results = ''
+
+    for i, conn in enumerate(all_connections):
+        try:
+            conn.send(str.encode(' '))
+            conn.recv(101480)
+        except:
+            del all_connections[i]
+            del all_address[i]
+            continue
+
+        results = str(i) + "  " + str(all_address[i][0]) + "  " + str(all_address[i][1]) + "\n"
+    print("---- Clients -----" + "\n" + results)
+
+
+def get_target(cmd):
+    pass
+
+
+def send_target_commands(conn):
+    pass
