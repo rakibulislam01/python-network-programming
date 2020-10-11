@@ -71,8 +71,8 @@ def accepting_connections():
 # 192.168.0.1> dir
 
 def start_turtle():
-    cmd = input('turtle> ')
     while True:
+        cmd = input('turtle> ')
         if cmd == 'list':
             list_connections()
         elif 'select' in cmd:
@@ -127,3 +127,34 @@ def send_target_commands(conn):
         except:
             print("Error sending commands")
             break
+
+
+# Create worker threads
+def create_workers():
+    for _ in range(NUMBER_OF_THREADS):
+        t = threading.Thread(target=work)
+        t.daemon = True
+        t.start()
+
+
+# Do next job that is in the queue and (handle connections, send commands)
+def work():
+    while True:
+        x = queue.get()
+        if x == 1:
+            create_socket()
+            bind_socket()
+            accepting_connections()
+        if x == 2:
+            start_turtle()
+        queue.task_done()
+
+
+def create_jobs():
+    for x in JOB_NUMBER:
+        queue.put(x)
+    queue.join()
+
+
+create_workers()
+create_jobs()
